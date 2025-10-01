@@ -1,50 +1,108 @@
-# Welcome to your Expo app 👋
+# Stremix
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+An open-source multimedia player for movies, series, and more - with zero subscriptions, zero ads, and complete freedom.
 
-## Get started
+## 🎬 What is Stremix?
 
-1. Install dependencies
+Stremix is a free, open-source streaming application that lets you watch movies, TV shows, and other multimedia content through your own sources. No built-in content providers, no subscription requirements.
 
-   ```bash
-   npm install
-   ```
+**Key Philosophy:**
+- **Bring Your Own Sources**: You provide the torrent/server URLs, we provide the beautiful interface
+- **No Subscriptions**: Completely free, forever
+- **Open Source**: Transparent, community-driven development
+- **Privacy First**: No tracking, no accounts, no data collection
 
-2. Start the app
+## ✨ Features
 
-   ```bash
-   npx expo start
-   ```
+- 🎥 **Universal Media Player**: Watch movies, TV series, documentaries, and more
+- 🔗 **Custom Sources**: Add your own torrent providers and streaming servers
+- 📱 **Cross-Platform**: Built with React Native for Android, iOS and Web
+- 🎨 **Modern UI**: Beautiful, intuitive interface with smooth animations
+- 🔍 **Advanced Search**: Find content quickly across all your sources
+- 📚 **Library Management**: Keep track of your watchlist and favorites
 
-In the output, you'll find options to open the app in a
+## 🚀 Getting Started
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Prerequisites
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- Node.js (v18 or higher)
+- npm or yarn
+- Expo CLI
+- For iOS: Xcode and CocoaPods
+- For Android: Android Studio and SDK
 
-## Get a fresh project
-
-When you're ready, run:
+### Installation
 
 ```bash
-npm run reset-project
+# Clone the repository
+git clone https://github.com/yourusername/stremix.git
+
+# Navigate to project directory
+cd stremix
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Running the App
 
-## Learn more
+```bash
+# iOS
+npm run ios
 
-To learn more about developing your project with Expo, look at the following resources:
+# Android
+npm run android
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+# Web (development)
+npm run web
+```
 
-## Join the community
+## 📖 How It Works
 
-Join our community of developers creating universal apps.
+1. **Add Your Sources**: Configure torrent tracker URLs or streaming server endpoints
+2. **Browse Content**: The app fetches available movies and shows from your sources
+3. **Stream & Enjoy**: Select what you want to watch and start streaming
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+**Note:** Stremix does not host, provide, or distribute any content. It's a player that connects to sources YOU configure.
+
+## 🛠️ Technology Stack
+
+- **Framework**: React Native + Expo
+- **Styling**: NativeWind (Tailwind CSS for React Native)
+- **Animations**: React Native Reanimated
+- **Navigation**: Expo Router
+- **Language**: TypeScript
+
+## ⚖️ Legal Disclaimer
+
+Stremix is a media player application. It does not host, provide, index, or distribute any copyrighted content. Users are solely responsible for the sources they add and the content they access. The developers of Stremix do not condone piracy and encourage users to only access content they have legal rights to view.
+
+## 🤝 Contributing
+
+We welcome contributions! Whether it's:
+
+- 🐛 Bug fixes
+- ✨ New features
+- 📝 Documentation improvements
+- 🎨 UI/UX enhancements
+
+Please feel free to open issues and pull requests.
+
+### Development Guidelines
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+Built with love by the open-source community.

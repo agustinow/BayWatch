@@ -2,6 +2,7 @@
 
 # dependencies
 node_modules/
+bower_components/
 
 # Expo
 .expo/
@@ -17,6 +18,7 @@ expo-env.d.ts
 *.p12
 *.key
 *.mobileprovision
+*.keystore
 
 # Metro
 .metro-health-check*
@@ -30,8 +32,18 @@ yarn-error.*
 .DS_Store
 *.pem
 
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Linux
+*~
+
 # local env files
+.env
 .env*.local
+.env.development
+.env.production
 
 # typescript
 *.tsbuildinfo
@@ -41,4 +53,41 @@ app-example
 # generated native folders
 /ios
 /android
-/codealike.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+*.sublime-project
+codealike.json
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Build outputs
+build/
+out/
+
+# Testing
+coverage/
+.nyc_output/
+
+# User data (important for privacy)
+user-sources.json
+user-config.json
+cache/
+downloads/
