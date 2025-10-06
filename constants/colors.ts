@@ -1,17 +1,35 @@
-const colors = {
-    primary: '#030014',
-    secondary: '#151312',
-    light: {
-        100: '#D6C6FF',
-        200: '#A8B5DB',
-        300: '#9CA4AB'
-    },
+export const palette = {
     dark: {
-        100: '#221F3D',
-        200: '#0F0D23'
+        primary: '#080F24',      // base dark background
+        secondary: '#302E52',    // surface / soft contrast
+        text: '#EAD9B0',        // main text on dark background
+        border: '#070F23',      // deep shadow
+        muted: '#0B0E1A',       // almost black
+        accent: '#F4A218',      // energy color (buttons, focus)
+        warning: '#CA2F1C',     // alert or strong action
+        success: '#EAD9B0',     // warm light / confirmation
+        light100: '#EAD9B0',    // warm lighthouse light
+        light200: '#F4A218',    // energetic ray
+        light300: '#CA2F1C',    // lighthouse red
+        dark100: '#070F23',     // deep shadow
+        dark200: '#0B0E1A',     // almost black
     },
-    accent: '#AB8BFF'
+    light: {
+        primary: '#F5F3EF',     // light background
+        secondary: '#E4E1DC',   // light surface
+        text: '#151515',        // dark text
+        border: '#B7B4AE',      // light border
+        muted: '#8E8B84',       // muted gray
+        accent: '#F4A218',      // energy color
+        warning: '#CA2F1C',     // alert red
+        success: '#4CAF50',     // success green
+        light100: '#302E52',    // dark ink for headings
+        light200: '#CA2F1C',    // red accent
+        light300: '#F4A218',    // orange accent
+        dark100: '#B7B4AE',     // border gray
+        dark200: '#8E8B84',     // muted gray
+    }
 }
 
-export { colors };
-module.exports = { colors };
+// Export for Tailwind config compatibility
+export const colors = palette;

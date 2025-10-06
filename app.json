@@ -14,14 +14,14 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
-        "foregroundImage": "./assets/icons.icon.png"
+        "foregroundImage": "./assets/icons/icon.png"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.agustinow.stremix"
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/icon/icon.png",
+      "favicon": "./assets/icons/icon.png",
       "bundler": "metro"
     },
     "plugins": [
@@ -29,7 +29,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/icons/icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
