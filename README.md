@@ -18,9 +18,10 @@
 BayWatch is a free, open-source React Native streaming app that lets you watch movies and TV shows via torrents. Inspired by Stremio and powered by Torrentio, BayWatch provides a beautiful interface for discovering and streaming content through your own torrent sources.
 
 **Key Features:**
+- 🧑‍💻 [My own updated fork](https://github.com/agustinow/react-native-torrent-streamer) of React Native Torrent Streamer. A magnet-to-http streamer built using torrentlib
 - 🎥 Browse popular movies with rich metadata from TMDB
 - 🔍 Advanced search with instant results
-- 🧲 Torrent stream integration via Torrentio API
+- 🧲 Magnet fetch integration via Torrentio API
 - 📱 Native Android app (iOS coming soon)
 - 🎨 Beautiful dark mode UI with smooth animations
 - 🚀 Sequential torrent downloading for instant streaming
@@ -47,7 +48,6 @@ BayWatch is a free, open-source React Native streaming app that lets you watch m
 - **Smooth Animations**: Reanimated entrance and interaction animations
 
 ### In Progress 🚧
-- **Native Torrent Streaming**: Building local sequential downloader with HTTP server
 - **Video Player**: Integrated player with playback controls
 - **TV Shows Support**: Series and episodes
 - **Favorites & Watchlist**: Save content for later
@@ -120,7 +120,7 @@ Response → API Types → Domain Types → UI
 ### APIs & Services
 - **TMDB API**: Movie metadata, posters, ratings, descriptions
 - **Torrentio API**: Torrent stream discovery with metadata
-- **Torrent Streaming**: Custom native module (in development)
+- **Torrent Streaming**: https://github.com/agustinow/react-native-torrent-streamer
 
 ---
 
@@ -216,7 +216,7 @@ Parse emoji-encoded metadata (👤💾⚙️🇬🇧)
     ↓
 Generate magnet URI with 20+ trackers
     ↓
-[Future] Start native torrent streamer
+Start native torrent streamer
     ↓
 Return local URL: http://127.0.0.1:PORT/stream
     ↓
@@ -334,10 +334,10 @@ The developers of BayWatch do not condone piracy. This tool is designed for stre
 - [x] Stream selection UI
 
 ### Phase 3: Streaming (In Progress) 🚧
-- [ ] Fix/modernize react-native-torrent-streamer
-- [ ] Sequential torrent downloading
-- [ ] Local HTTP server
-- [ ] Integrated video player
+- [x] Fix/modernize react-native-torrent-streamer
+- [x] Sequential torrent downloading
+- [x] Local HTTP server
+- [x] Integrated video player
 - [ ] Playback controls
 
 ### Phase 4: Enhancement 📋
