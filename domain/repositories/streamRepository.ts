@@ -60,7 +60,7 @@ function mapTorrentioStream(torrentioStream: TorrentioStream): Stream {
     // Get clean title (first line before metadata)
     const cleanTitle = torrentioStream.title.split('\n')[0];
 
-    return {
+    const stream = {
         infoHash: torrentioStream.infoHash,
         quality,
         title: cleanTitle,
@@ -73,7 +73,65 @@ function mapTorrentioStream(torrentioStream: TorrentioStream): Stream {
             torrentioStream.infoHash,
             torrentioStream.behaviorHints?.filename || cleanTitle
         ),
+        ratio: 0, // Will be calculated below
     };
+
+    // Calculate peer/size ratio
+    stream.ratio = calculateRatio(stream);
+
+    return stream;
+}
+
+/**
+ * Parse size string to bytes for comparison
+ */
+function parseSize(sizeStr?: string): number {
+    if (!sizeStr) return 0;
+    const match = sizeStr.match(/(\d+\.?\d*)\s*(GB|MB|KB)/i);
+    if (!match) return 0;
+    const value = parseFloat(match[1]);
+    const unit = match[2].toUpperCase();
+    const multipliers: Record<string, number> = {
+        'KB': 1024,
+        'MB': 1024 * 1024,
+        'GB': 1024 * 1024 * 1024
+    };
+    return value * (multipliers[unit] || 0);
+}
+
+/**
+ * Calculate peer/size ratio (higher is better)
+ */
+function calculateRatio(stream: Stream): number {
+    const sizeBytes = parseSize(stream.size);
+    const seeders = stream.seeders || 0;
+    // Convert to GB for ratio calculation
+    return sizeBytes > 0 ? (seeders / (sizeBytes / (1024 * 1024 * 1024))) : seeders;
+}
+
+/**
+ * Remove duplicate streams by infoHash, keeping the one with best peer/size ratio
+ */
+function deduplicateStreams(streams: Stream[]): Stream[] {
+    const streamsByHash = new Map<string, Stream>();
+
+    for (const stream of streams) {
+        const existing = streamsByHash.get(stream.infoHash);
+
+        if (!existing) {
+            streamsByHash.set(stream.infoHash, stream);
+        } else {
+            // Keep the stream with better peer/size ratio
+            const existingRatio = calculateRatio(existing);
+            const currentRatio = calculateRatio(stream);
+
+            if (currentRatio > existingRatio) {
+                streamsByHash.set(stream.infoHash, stream);
+            }
+        }
+    }
+
+    return Array.from(streamsByHash.values());
 }
 
 export const streamRepository = {
@@ -83,7 +141,8 @@ export const streamRepository = {
      */
     async getMovieStreams(imdbId: string): Promise<Stream[]> {
         const response = await torrentioClient.getMovieStreams(imdbId);
-        return response.streams.map(mapTorrentioStream);
+        const streams = response.streams.map(mapTorrentioStream);
+        return deduplicateStreams(streams);
     },
 
     /**
@@ -91,6 +150,7 @@ export const streamRepository = {
      */
     async getSeriesStreams(imdbId: string, season: number, episode: number): Promise<Stream[]> {
         const response = await torrentioClient.getSeriesStreams(imdbId, season, episode);
-        return response.streams.map(mapTorrentioStream);
+        const streams = response.streams.map(mapTorrentioStream);
+        return deduplicateStreams(streams);
     },
 };

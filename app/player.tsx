@@ -13,13 +13,6 @@ export default function Player() {
 
     return (
         <View className="flex-1" style={{ backgroundColor: '#000' }}>
-            <TouchableOpacity
-                onPress={() => router.back()}
-                className="absolute top-12 left-4 bg-black/70 rounded-full p-2 z-10"
-            >
-                <MaterialCommunityIcons name="close" size={24} color="#fff" />
-            </TouchableOpacity>
-
             {magnetUri && <VideoPlayer uri={magnetUri} onClose={() => router.back()} />}
         </View>
     );

@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(adb:*)"
+      "Bash(adb:*)",
+      "Read(//c/Users/agust/Documents/Repos/react-native-torrent-streamer/**)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []

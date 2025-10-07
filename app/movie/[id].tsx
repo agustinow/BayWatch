@@ -19,6 +19,7 @@ export default function MovieDetails() {
     const [streams, setStreams] = useState<Stream[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadingStreams, setLoadingStreams] = useState(false);
+    const [selectedQuality, setSelectedQuality] = useState<string>('All');
 
     const loadMovie = useCallback(async () => {
         try {
@@ -48,6 +49,14 @@ export default function MovieDetails() {
     useEffect(() => {
         loadMovie();
     }, [loadMovie]);
+
+    // Get unique qualities from streams
+    const availableQualities = ['All', ...Array.from(new Set(streams.map(s => s.quality)))];
+
+    // Filter and sort streams by peer/size ratio
+    const filteredStreams = streams
+        .filter(stream => selectedQuality === 'All' || stream.quality === selectedQuality)
+        .sort((a, b) => b.ratio - a.ratio); // Descending order (higher ratio is better)
 
     if (loading) {
         return (
@@ -121,7 +130,7 @@ export default function MovieDetails() {
                         </View>
                     </View>
 
-                    <View className="px-5 -mt-20">
+                    <View className="px-5">
                         {/* Poster and Title - keep as is */}
                         <View className="flex-row">
                             {/* ... */}
@@ -143,11 +152,44 @@ export default function MovieDetails() {
                                 Available Streams {loadingStreams && '(Loading...)'}
                             </Text>
 
+                            {/* Quality Filter */}
+                            {streams.length > 0 && (
+                                <ScrollView
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    className="mb-4"
+                                >
+                                    {availableQualities.map((quality) => (
+                                        <TouchableOpacity
+                                            key={quality}
+                                            onPress={() => setSelectedQuality(quality)}
+                                            className="mr-2 px-4 py-2 rounded-full"
+                                            style={{
+                                                backgroundColor: selectedQuality === quality
+                                                    ? colors.accent
+                                                    : colors.secondary,
+                                            }}
+                                        >
+                                            <Text
+                                                className="font-semibold"
+                                                style={{
+                                                    color: selectedQuality === quality
+                                                        ? '#000'
+                                                        : colors.text,
+                                                }}
+                                            >
+                                                {quality}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </ScrollView>
+                            )}
+
                             {loadingStreams ? (
                                 <ActivityIndicator size="small" color={colors.accent} />
-                            ) : streams.length > 0 ? (
+                            ) : filteredStreams.length > 0 ? (
                                 <FlatList
-                                    data={streams}
+                                    data={filteredStreams}
                                     keyExtractor={(item) => item.infoHash}
                                     renderItem={({ item }) => (
                                         <StreamCard

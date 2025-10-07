@@ -3,9 +3,10 @@ import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import { StatusBar } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
 import {useEffect} from "react";
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 function RootLayoutNav() {
-    const { colors, theme } = useTheme(); // asumiendo que tu ThemeContext expone isDark
+    const { colors, theme } = useTheme();
 
     useEffect(() => {
         SystemUI.setBackgroundColorAsync(colors.primary);
@@ -33,7 +34,7 @@ function RootLayoutNav() {
                     name="player"
                     options={{
                         presentation: 'fullScreenModal',
-                        animation: 'fade',
+                        animation: 'fade'
                     }}
                 />
             </Stack>
@@ -44,8 +45,10 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
     return (
-        <ThemeProvider>
-            <RootLayoutNav />
-        </ThemeProvider>
+        <SafeAreaProvider>
+            <ThemeProvider>
+                <RootLayoutNav />
+            </ThemeProvider>
+        </SafeAreaProvider>
     );
 }

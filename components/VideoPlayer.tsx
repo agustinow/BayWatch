@@ -1,10 +1,12 @@
-import { View, Text, ActivityIndicator, Alert, TouchableOpacity, TouchableWithoutFeedback, Animated, StatusBar } from 'react-native';
+import { View, Text, ActivityIndicator, Alert, TouchableOpacity, TouchableWithoutFeedback, Animated, StatusBar, Platform } from 'react-native';
 import { useEffect, useState, useRef } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import TorrentStreamer from 'react-native-torrent-streamer';
 import { VLCPlayer } from 'react-native-vlc-media-player';
 import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
+import * as ScreenOrientation from 'expo-screen-orientation';
+import * as NavigationBar from 'expo-navigation-bar';
 
 interface VideoPlayerProps {
     uri: string;
@@ -23,8 +25,6 @@ export default function VideoPlayer({ uri, onClose }: VideoPlayerProps) {
     const [loading, setLoading] = useState(true);
     const [streamUrl, setStreamUrl] = useState<string | null>(null);
     const [buffering, setBuffering] = useState(true);
-    const [bufferStartTime, setBufferStartTime] = useState<number | null>(null);
-    const [, forceUpdate] = useState(0);
     const [status, setStatus] = useState<StreamStatus>({
         progress: 0,
         downloadSpeed: 0,
@@ -37,7 +37,9 @@ export default function VideoPlayer({ uri, onClose }: VideoPlayerProps) {
     const [duration, setDuration] = useState(0);
     const [showControls, setShowControls] = useState(true);
     const [seeking, setSeeking] = useState(false);
-    const [isFullscreen, setIsFullscreen] = useState(false);
+    const [isLandscape, setIsLandscape] = useState(false);
+    const [showDebug, setShowDebug] = useState(false);
+    const [isBufferingDuringPlayback, setIsBufferingDuringPlayback] = useState(false);
 
     const statusListenerRef = useRef<any>(null);
     const errorListenerRef = useRef<any>(null);
@@ -45,70 +47,105 @@ export default function VideoPlayer({ uri, onClose }: VideoPlayerProps) {
     const playerRef = useRef<VLCPlayer>(null);
     const controlsOpacity = useRef(new Animated.Value(1)).current;
     const controlsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const lastStatusUpdate = useRef<number>(0);
+    const lastStatusValues = useRef({ progress: 0, buffer: 0 });
 
     useEffect(() => {
         startStreaming();
 
+        // Listen for orientation changes
+        const subscription = ScreenOrientation.addOrientationChangeListener(async (event) => {
+            const orientation = event.orientationInfo.orientation;
+            const landscape =
+                orientation === ScreenOrientation.Orientation.LANDSCAPE_LEFT ||
+                orientation === ScreenOrientation.Orientation.LANDSCAPE_RIGHT;
+
+            setIsLandscape(landscape);
+            StatusBar.setHidden(landscape);
+
+            // Hide navigation bar on Android when in landscape
+            if (Platform.OS === 'android') {
+                if (landscape) {
+                    await NavigationBar.setVisibilityAsync('hidden');
+                    await NavigationBar.setBehaviorAsync('overlay-swipe');
+                } else {
+                    await NavigationBar.setVisibilityAsync('visible');
+                }
+            }
+        });
+
         return () => {
             cleanup();
+            subscription.remove();
         };
     }, [uri]);
 
     useEffect(() => {
-        if (!bufferStartTime || !buffering) return;
-
-        const checkBuffer = setInterval(() => {
-            const elapsed = (Date.now() - bufferStartTime) / 1000;
-            if (elapsed >= 10) {
-                setBuffering(false);
-                setStatusMessage('Playing...');
-            } else {
-                forceUpdate(prev => prev + 1);
-            }
-        }, 100);
-
-        return () => clearInterval(checkBuffer);
-    }, [bufferStartTime, buffering]);
+        // Auto-start playback when buffer reaches minimum threshold
+        if (buffering && status.bufferPercent >= 100) {
+            setBuffering(false);
+            setStatusMessage('Ready to play');
+        }
+    }, [buffering, status.bufferPercent]);
 
     const startStreaming = async () => {
         try {
             setStatusMessage('Starting torrent stream...');
 
-            progressListenerRef.current = TorrentStreamer.addEventListener('progress', (data) => {
-                console.log('progress event:', data);
-                if (data.files && data.files.length > 0) {
-                    TorrentStreamer.setSelectedFileIndex(-1);
-                }
-            });
-
-            statusListenerRef.current = TorrentStreamer.addEventListener('status', (data) => {
-                const progressValue = data.progress || 0;
-                setStatus({
-                    progress: progressValue,
-                    downloadSpeed: data.downloadRate || 0,
-                    seeds: data.numSeeds || 0,
-                    bufferPercent: data.buffer || 0
-                });
-
-                if (progressValue < 5) {
-                    setStatusMessage(`Preparing stream... ${progressValue.toFixed(1)}%`);
-                } else {
-                    setStatusMessage(`Buffering... ${progressValue.toFixed(1)}%`);
-                }
-            });
-
-            errorListenerRef.current = TorrentStreamer.addEventListener('error', (error) => {
-                console.error('Streaming error:', error);
-                Alert.alert('Streaming Error', error.msg || 'Failed to stream torrent');
-            });
+            console.log('Starting torrent...');
 
             const result = await TorrentStreamer.start(uri, {
                 removeAfterStop: true
             });
 
+            console.log('Torrent started, setting up event listeners...');
+
+            statusListenerRef.current = TorrentStreamer.addEventListener('status', (data) => {
+                const now = Date.now();
+                const bufferValue = parseFloat(data.buffer) || 0;
+                const progressValue = parseFloat(data.progress) || 0;
+
+                // Throttle updates: only update if 500ms passed OR values changed significantly
+                const timeSinceLastUpdate = now - lastStatusUpdate.current;
+                const significantChange =
+                    Math.abs(progressValue - lastStatusValues.current.progress) > 1 ||
+                    Math.abs(bufferValue - lastStatusValues.current.buffer) > 5
+
+                if (timeSinceLastUpdate < 500 && !significantChange) {
+                    return; // Skip this update
+                }
+
+                // Log only on updates (much less frequent now)
+                console.log('❗ STATUS UPDATE:', JSON.stringify(data, null, 2));
+
+                // Update refs
+                lastStatusUpdate.current = now;
+                lastStatusValues.current = { progress: progressValue, buffer: bufferValue };
+
+                setStatus({
+                    progress: progressValue,
+                    downloadSpeed: data.downloadRate || 0,
+                    seeds: data.numSeeds || 0,
+                    bufferPercent: bufferValue
+                });
+
+                if (bufferValue < 5) {
+                    setStatusMessage(`Preparing stream... ${bufferValue.toFixed(1)}%`);
+                } else {
+                    setStatusMessage(`Buffering... ${bufferValue.toFixed(1)}%`);
+                }
+            });
+
+            errorListenerRef.current = TorrentStreamer.addEventListener('error', (error) => {
+                console.error('❗ ERROR EVENT:', error);
+                Alert.alert('Streaming Error', error.msg || 'Failed to stream torrent');
+            });
+
+            console.log('Event listeners set up');
+
             console.log('Stream started:', result);
+            console.log('File size:', result.fileSize, 'bytes =', (result.fileSize / 1024 / 1024).toFixed(2), 'MB');
             setStreamUrl(result.url);
-            setBufferStartTime(Date.now());
             setLoading(false);
             setStatusMessage('Buffering video...');
         } catch (error: any) {
@@ -141,8 +178,11 @@ export default function VideoPlayer({ uri, onClose }: VideoPlayerProps) {
             if (controlsTimeout.current) {
                 clearTimeout(controlsTimeout.current);
             }
-            // Restore status bar
+            // Restore status bar and navigation bar
             StatusBar.setHidden(false);
+            if (Platform.OS === 'android') {
+                await NavigationBar.setVisibilityAsync('visible');
+            }
             TorrentStreamer.stop();
         } catch (error) {
             console.error('Cleanup error:', error);
@@ -194,10 +234,6 @@ export default function VideoPlayer({ uri, onClose }: VideoPlayerProps) {
         }
     };
 
-    const toggleFullscreen = () => {
-        setIsFullscreen(!isFullscreen);
-        StatusBar.setHidden(!isFullscreen);
-    };
 
     const handleSeek = (value: number) => {
         setSeeking(false);
@@ -219,9 +255,8 @@ export default function VideoPlayer({ uri, onClose }: VideoPlayerProps) {
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
-    const bufferProgress = bufferStartTime
-        ? Math.min(((Date.now() - bufferStartTime) / 10000) * 100, 100)
-        : 0;
+    // Use actual buffer progress from torrent stream instead of time-based fake progress
+    const bufferProgress = status.bufferPercent;
 
     return (
         <View className="flex-1" style={{ backgroundColor: '#000' }}>
@@ -231,17 +266,7 @@ export default function VideoPlayer({ uri, onClose }: VideoPlayerProps) {
                     <Text className="mt-4 text-base" style={{ color: '#fff' }}>
                         {statusMessage}
                     </Text>
-                    {status.progress > 0 && (
-                        <>
-                            <Text className="mt-2 text-sm" style={{ color: '#aaa' }}>
-                                Speed: {(status.downloadSpeed / 1024 / 1024).toFixed(2)} MB/s
-                            </Text>
-                            <Text className="text-sm" style={{ color: '#aaa' }}>
-                                Seeds: {status.seeds}
-                            </Text>
-                        </>
-                    )}
-                    {buffering && bufferStartTime && (
+                    {buffering && streamUrl && (
                         <View className="mt-4 w-4/5">
                             <View style={{
                                 width: '100%',
@@ -256,8 +281,11 @@ export default function VideoPlayer({ uri, onClose }: VideoPlayerProps) {
                                     backgroundColor: colors.accent
                                 }} />
                             </View>
-                            <Text className="mt-2 text-sm text-center" style={{ color: '#aaa' }}>
-                                Buffering: {Math.floor(bufferProgress)}%
+                            <Text className="mt-1 text-xs text-center" style={{ color: '#aaa' }}>
+                                Buffer: {bufferProgress.toFixed(1)}%
+                            </Text>
+                            <Text className="mt-1 text-xs text-center" style={{ color: '#666' }}>
+                                Downloaded: {status.progress.toFixed(1)}%
                             </Text>
                         </View>
                     )}
@@ -267,10 +295,11 @@ export default function VideoPlayer({ uri, onClose }: VideoPlayerProps) {
                     <View style={{ flex: 1 }}>
                         <VLCPlayer
                             ref={playerRef}
-                            style={{ flex: 1 }}
+                            style={{ flex: 1, width: '100%', height: '100%' }}
                             source={{ uri: streamUrl }}
                             autoplay={true}
                             paused={paused}
+                            resizeMode="contain"
                             onProgress={(event) => {
                                 if (!seeking) {
                                     setCurrentTime(event.currentTime / 1000); // VLC returns milliseconds
@@ -280,7 +309,19 @@ export default function VideoPlayer({ uri, onClose }: VideoPlayerProps) {
                                 setDuration(event.duration / 1000); // VLC returns milliseconds
                             }}
                             onPaused={() => setPaused(true)}
-                            onPlaying={() => setPaused(false)}
+                            onPlaying={() => {
+                                setPaused(false);
+                                setIsBufferingDuringPlayback(false);
+                            }}
+                            onBuffering={(isBuffering) => {
+                                console.log('Buffering state:', isBuffering);
+                                if (isBuffering && !paused) {
+                                    // Auto-pause when buffering occurs during playback
+                                    setPaused(true);
+                                    setIsBufferingDuringPlayback(true);
+                                    setStatusMessage('Buffering... (paused)');
+                                }
+                            }}
                             onError={(error) => {
                                 console.error('VLC Player error:', error);
                                 Alert.alert('Playback Error', 'Failed to play video');
@@ -311,19 +352,12 @@ export default function VideoPlayer({ uri, onClose }: VideoPlayerProps) {
                                         backgroundColor: 'rgba(0,0,0,0.6)',
                                         flexDirection: 'row',
                                         alignItems: 'center',
-                                        justifyContent: 'space-between',
+                                        justifyContent: 'flex-end',
                                     }}
                                     pointerEvents="box-none"
                                 >
-                                    <TouchableOpacity onPress={onClose} style={{ padding: 8 }}>
-                                        <Ionicons name="arrow-back" size={28} color="#fff" />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity onPress={toggleFullscreen} style={{ padding: 8 }}>
-                                        <Ionicons
-                                            name={isFullscreen ? "contract" : "expand"}
-                                            size={24}
-                                            color="#fff"
-                                        />
+                                    <TouchableOpacity onPress={() => setShowDebug(!showDebug)} style={{ padding: 8 }}>
+                                        <Ionicons name="bug" size={24} color={showDebug ? colors.accent : '#fff'} />
                                     </TouchableOpacity>
                                 </View>
 
@@ -353,6 +387,39 @@ export default function VideoPlayer({ uri, onClose }: VideoPlayerProps) {
                                         />
                                     </TouchableOpacity>
                                 </View>
+
+                                {/* Debug Info */}
+                                {showDebug && (
+                                    <View
+                                        style={{
+                                            position: 'absolute',
+                                            top: 100,
+                                            left: 16,
+                                            backgroundColor: 'rgba(0,0,0,0.8)',
+                                            padding: 12,
+                                            borderRadius: 8,
+                                        }}
+                                    >
+                                        <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold', marginBottom: 4 }}>
+                                            Debug Info
+                                        </Text>
+                                        <Text style={{ color: '#fff', fontSize: 11 }}>
+                                            Buffer: {(status.bufferPercent).toFixed(1)}%
+                                        </Text>
+                                        <Text style={{ color: '#666', fontSize: 11 }}>
+                                            Downloaded: {(status.progress).toFixed(1)}%
+                                        </Text>
+                                        <Text style={{ color: '#fff', fontSize: 11 }}>
+                                            Speed: {(status.downloadSpeed / 1024 / 1024).toFixed(2)} MB/s
+                                        </Text>
+                                        <Text style={{ color: '#fff', fontSize: 11 }}>
+                                            Seeds: {status.seeds}
+                                        </Text>
+                                        <Text style={{ color: isBufferingDuringPlayback ? colors.accent : '#fff', fontSize: 11 }}>
+                                            Buffering: {isBufferingDuringPlayback ? 'Yes' : 'No'}
+                                        </Text>
+                                    </View>
+                                )}
 
                                 <View
                                     style={{

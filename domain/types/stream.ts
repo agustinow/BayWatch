@@ -8,4 +8,5 @@ export interface Stream {
     languages?: string[];
     filename?: string;
     magnetUri?: string;
+    ratio: number; // Peer/size ratio (higher is better)
 }
