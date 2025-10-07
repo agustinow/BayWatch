@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "stremix",
-    "slug": "stremix",
+    "name": "BayWatch",
+    "slug": "BayWatch",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icons/icon.png",
-    "scheme": "stremix",
+    "scheme": "baywatch",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -17,7 +17,7 @@
         "foregroundImage": "./assets/icons/icon.png"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.agustinow.stremix"
+      "package": "com.agustinow.baywatch"
     },
     "web": {
       "output": "static",
@@ -25,6 +25,7 @@
       "bundler": "metro"
     },
     "plugins": [
+      "expo-dev-client",
       "expo-router",
       [
         "expo-splash-screen",
@@ -35,6 +36,14 @@
           "backgroundColor": "#ffffff",
           "dark": {
             "backgroundColor": "#000000"
+          }
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26
           }
         }
       ]

@@ -153,8 +153,13 @@ export default function MovieDetails() {
                                         <StreamCard
                                             stream={item}
                                             onPress={(stream) => {
-                                                console.log('Selected stream:', stream.magnetUri);
-                                                // TODO: Handle stream playback
+                                                router.push({
+                                                    pathname: '/player',
+                                                    params: {
+                                                        magnetUri: stream.magnetUri,
+                                                        title: stream.title,
+                                                    }
+                                                });
                                             }}
                                         />
                                     )}

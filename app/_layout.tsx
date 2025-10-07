@@ -25,10 +25,17 @@ function RootLayoutNav() {
                     contentStyle: { backgroundColor: colors.primary },
                     animation: 'none'
                 }}
-            >n
+            >
                 <Stack.Screen name="(drawer)"/>
                 <Stack.Screen name="movie/[id]"/>
                 <Stack.Screen name="search"/>
+                <Stack.Screen
+                    name="player"
+                    options={{
+                        presentation: 'fullScreenModal',
+                        animation: 'fade',
+                    }}
+                />
             </Stack>
         </>
     );
