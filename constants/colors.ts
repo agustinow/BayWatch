@@ -31,5 +31,39 @@ export const palette = {
     }
 }
 
-// Export for Tailwind config compatibility
+export const tailwindColors = {
+    primary: {
+        DEFAULT: palette.light.primary,
+        dark: palette.dark.primary,
+    },
+    secondary: {
+        DEFAULT: palette.light.secondary,
+        dark: palette.dark.secondary,
+    },
+    text: {
+        DEFAULT: palette.light.text,
+        dark: palette.dark.text,
+    },
+    border: {
+        DEFAULT: palette.light.border,
+        dark: palette.dark.border,
+    },
+    muted: {
+        DEFAULT: palette.light.muted,
+        dark: palette.dark.muted,
+    },
+    accent: {
+        DEFAULT: palette.light.accent,
+        dark: palette.dark.accent,
+    },
+    warning: {
+        DEFAULT: palette.light.warning,
+        dark: palette.dark.warning,
+    },
+    success: {
+        DEFAULT: palette.light.success,
+        dark: palette.dark.success,
+    },
+};
+
 export const colors = palette;

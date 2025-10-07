@@ -1,27 +1,44 @@
-import { DarkTheme, DefaultTheme, ThemeProvider as NavThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
+import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import * as SystemUI from 'expo-system-ui';
+import {useEffect} from "react";
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { ThemeProvider } from '@/contexts/ThemeContext';
+function RootLayoutNav() {
+    const { colors, theme } = useTheme(); // asumiendo que tu ThemeContext expone isDark
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+    useEffect(() => {
+        SystemUI.setBackgroundColorAsync(colors.primary);
+    }, [colors.primary]);
+
+    return (
+        <>
+            <StatusBar
+                style={theme === 'dark' ? 'light' : 'dark'}
+                backgroundColor={colors.primary}
+                translucent={false}
+            />
+
+            <Stack
+                screenOptions={{
+                    headerShown: false,
+                    contentStyle: { backgroundColor: colors.primary },
+                    animation: 'none'
+                }}
+            >n
+                <Stack.Screen name="(drawer)"/>
+                <Stack.Screen name="movie/[id]"/>
+                <Stack.Screen name="search"/>
+            </Stack>
+        </>
+    );
+}
+
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
-  return (
-    <ThemeProvider>
-      <NavThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-        </Stack>
-        <StatusBar style="auto" />
-      </NavThemeProvider>
-    </ThemeProvider>
-  );
+    return (
+        <ThemeProvider>
+            <RootLayoutNav />
+        </ThemeProvider>
+    );
 }

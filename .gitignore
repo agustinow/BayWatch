@@ -91,3 +91,5 @@ user-sources.json
 user-config.json
 cache/
 downloads/
+
+.local
