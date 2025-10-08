@@ -370,6 +370,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - **[TMDB](https://www.themoviedb.org/)**: Movie metadata and images
 - **[Torrentio](https://torrentio.strem.fun/)**: Torrent stream aggregation
 - **[Stremio](https://www.stremio.com/)**: Inspiration and architecture reference
+- **[libtorrent4j / libtorrent](libtorrent4j.org)**: Torrent client library
 - **React Native Community**: Amazing open-source ecosystem
 - **Expo Team**: Making React Native development a joy
 
