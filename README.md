@@ -18,11 +18,12 @@
 BayWatch is a free, open-source React Native streaming app that lets you watch movies and TV shows via torrents. Inspired by Stremio and powered by Torrentio, BayWatch provides a beautiful interface for discovering and streaming content through your own torrent sources.
 
 **Key Features:**
-- 🧑‍💻 [My own updated fork](https://github.com/agustinow/react-native-torrent-streamer) of React Native Torrent Streamer. A magnet-to-http streamer built using torrentlib
+- 🧑‍💻 [My own updated and improved fork](https://github.com/agustinow/react-native-torrent-streamer) of React Native Torrent Streamer. A magnet-to-http streamer built using torrentlib
 - 🎥 Browse popular movies with rich metadata from TMDB
 - 🔍 Advanced search with instant results
 - 🧲 Magnet fetch integration via Torrentio API
 - 📱 Native Android app (iOS coming soon)
+- 📄 Webapp (coming soon)
 - 🎨 Beautiful dark mode UI with smooth animations
 - 🚀 Sequential torrent downloading for instant streaming
 - 🔒 Privacy-first: No accounts, no tracking, no data collection
@@ -338,7 +339,8 @@ The developers of BayWatch do not condone piracy. This tool is designed for stre
 - [x] Sequential torrent downloading
 - [x] Local HTTP server
 - [x] Integrated video player
-- [ ] Playback controls
+- [x] Playback controls
+- [ ] Polishing
 
 ### Phase 4: Enhancement 📋
 - [ ] TV Shows & Episodes
@@ -346,38 +348,14 @@ The developers of BayWatch do not condone piracy. This tool is designed for stre
 - [ ] Favorites & Watchlist
 - [ ] Continue watching
 - [ ] Download management
-- [ ] Chromecast support
 
 ### Phase 5: Polish 🎨
+- [ ] Web support
 - [ ] iOS support
-- [ ] Splash screen
+- [ ] Animated splash screen
 - [ ] App icon refinement
-- [ ] Settings screen
-- [ ] Quality preferences
-- [ ] Language preferences
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Whether it's:
-
-- 🐛 **Bug fixes**: Fix issues or improve stability
-- ✨ **New features**: Add functionality
-- 📝 **Documentation**: Improve README or add guides
-- 🎨 **UI/UX**: Design improvements
-- 🔧 **Performance**: Optimization and refactoring
-
-### Development Guidelines
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Follow TypeScript and ESLint rules
-4. Keep clean architecture separation (api → domain → UI)
-5. Test on Android device or emulator
-6. Commit: `git commit -m 'Add amazing feature'`
-7. Push: `git push origin feature/amazing-feature`
-8. Open a Pull Request
+- [ ] Settings screen (OpenSubtitles API KEY, WiFi, theming, etc.)
+- [ ] Language preferences (default subtitles)
 
 ---
 
