@@ -376,7 +376,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ---
 
-<div style="text-align: center;">
+<div align="center">
   <p>Built with ❤️ using React Native and Expo</p>
   <p><strong>Stream Responsibly. Respect Copyright.</strong></p>
 </div>
