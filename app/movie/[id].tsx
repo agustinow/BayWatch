@@ -102,9 +102,9 @@ export default function MovieDetails() {
                     />
                 </View>
 
-                <View className="px-5 -mt-20">
+                <View className="-mt-20">
                     {/* Poster and Title */}
-                    <View className="flex-row">
+                    <View className="flex-row mx-5">
                         {movie.posterUrl && (
                             <Image
                                 source={{ uri: movie.posterUrl }}
@@ -130,14 +130,9 @@ export default function MovieDetails() {
                         </View>
                     </View>
 
-                    <View className="px-5">
-                        {/* Poster and Title - keep as is */}
-                        <View className="flex-row">
-                            {/* ... */}
-                        </View>
-
+                    <View className="">
                         {/* Overview */}
-                        <View className="mt-6">
+                        <View className="mt-6 mx-5">
                             <Text className="text-xl font-bold mb-3" style={{ color: colors.text }}>
                                 Overview
                             </Text>
@@ -148,7 +143,7 @@ export default function MovieDetails() {
 
                         {/* Streams - Use FlatList */}
                         <View className="mt-6 mb-10">
-                            <Text className="text-xl font-bold mb-3" style={{ color: colors.text }}>
+                            <Text className="text-xl font-bold mb-3 mx-5" style={{ color: colors.text }}>
                                 Available Streams {loadingStreams && '(Loading...)'}
                             </Text>
 
@@ -158,6 +153,7 @@ export default function MovieDetails() {
                                     horizontal
                                     showsHorizontalScrollIndicator={false}
                                     className="mb-4"
+                                    contentContainerClassName="px-5"
                                 >
                                     {availableQualities.map((quality) => (
                                         <TouchableOpacity
@@ -189,6 +185,7 @@ export default function MovieDetails() {
                                 <ActivityIndicator size="small" color={colors.accent} />
                             ) : filteredStreams.length > 0 ? (
                                 <FlatList
+                                    className="mx-5"
                                     data={filteredStreams}
                                     keyExtractor={(item) => item.infoHash}
                                     renderItem={({ item }) => (
@@ -209,7 +206,7 @@ export default function MovieDetails() {
                                     nestedScrollEnabled={true}
                                 />
                             ) : (
-                                <Text style={{ color: colors.text, opacity: 0.6 }}>
+                                <Text className="mx-5" style={{ color: colors.text, opacity: 0.6 }}>
                                     No streams available
                                 </Text>
                             )}

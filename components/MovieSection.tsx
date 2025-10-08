@@ -31,7 +31,7 @@ export default function MovieSection(props: MovieSectionProps) {
 
     return (
         <View className="w-full mt-8">
-            <Text className="px-8 text-2xl font-bold mb-4 text-text dark:text-text-dark">
+            <Text className="mx-8 text-2xl font-bold mb-4 text-text dark:text-text-dark">
                 {props.title}
             </Text>
             <Animated.FlatList
@@ -48,7 +48,7 @@ export default function MovieSection(props: MovieSectionProps) {
                     />
                 )}
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 20 }}
+                contentContainerClassName="px-5"
                 ItemSeparatorComponent={() =>
                     <View className="w-4" />
                 }

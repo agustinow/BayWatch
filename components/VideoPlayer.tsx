@@ -115,7 +115,7 @@ export default function VideoPlayer({ uri, onClose }: VideoPlayerProps) {
     }, [uri]);
 
     useEffect(() => {
-        if (buffering && status.bufferPercent >= 100 && status.progress >= 5) {
+        if (buffering && status.bufferPercent >= 100 && status.progress >= 3) {
             setBuffering(false);
             setStatusMessage('Ready to play');
             showControlsTemporarily();
@@ -130,7 +130,7 @@ export default function VideoPlayer({ uri, onClose }: VideoPlayerProps) {
             statusListenerRef.current = TorrentStreamer.addEventListener('status', (data) => {
                 const now = Date.now();
                 const bufferValue = data.buffer || 0;
-                const progressValue = data.buffer || 0;
+                const progressValue = data.progress || 0;
                 const timeSinceLastUpdate = now - lastStatusUpdate.current;
                 const significantChange =
                     Math.abs(progressValue - lastStatusValues.current.progress) > 1 ||
@@ -237,7 +237,7 @@ export default function VideoPlayer({ uri, onClose }: VideoPlayerProps) {
                 setPaused(true);
                 setIsBufferingDuringPlayback(true);
                 setStatusMessage('Buffering... waiting for more data');
-                setShowControls(true)
+                setShowControls(true);
             }
         } else if (!data.isBuffering && isBufferingDuringPlayback) {
             if (status.bufferPercent > 50) {
@@ -280,8 +280,6 @@ export default function VideoPlayer({ uri, onClose }: VideoPlayerProps) {
 
     const handlePlaybackStateChanged = (_state: any) => {};
 
-    const bufferProgress = status.bufferPercent;
-
     return (
         <View className="flex-1 bg-black relative">
             {loading || !streamUrl || buffering ? (
@@ -291,9 +289,9 @@ export default function VideoPlayer({ uri, onClose }: VideoPlayerProps) {
                     {buffering && streamUrl && (
                         <View className="mt-4 w-4/5">
                             <View style={{ width: '100%', height: 6, backgroundColor: '#333', borderRadius: 3, overflow: 'hidden' }}>
-                                <View style={{ width: `${bufferProgress}%`, height: '100%', backgroundColor: colors.accent }} />
+                                <View style={{ width: `${status.progress}%`, height: '100%', backgroundColor: colors.accent }} />
                             </View>
-                            <Text className="mt-1 text-xs text-center" style={{ color: '#aaa' }}>Buffer: {bufferProgress.toFixed(1)}%</Text>
+                            <Text className="mt-1 text-xs text-center" style={{ color: '#aaa' }}>Buffer: {(status.progress * 33).toFixed(1)}%</Text>
                             <Text className="mt-1 text-xs text-center" style={{ color: '#666' }}>
                                 Downloaded: {status.progress.toFixed(1)}%
                             </Text>
@@ -310,10 +308,10 @@ export default function VideoPlayer({ uri, onClose }: VideoPlayerProps) {
                         source={{
                             uri: streamUrl,
                             bufferConfig: {
-                                minBufferMs: 15000,
-                                maxBufferMs: 30000,
-                                bufferForPlaybackMs: 5000,
-                                bufferForPlaybackAfterRebufferMs: 5000,
+                                minBufferMs: 5000,
+                                maxBufferMs: 10000,
+                                bufferForPlaybackMs: 2000,
+                                bufferForPlaybackAfterRebufferMs: 3000,
                                 backBufferDurationMs: 0,
                                 cacheSizeMB: 0
                             }
@@ -400,14 +398,18 @@ export default function VideoPlayer({ uri, onClose }: VideoPlayerProps) {
                                 </View>
                             )}
 
-                            <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 16, paddingBottom: 20, backgroundColor: 'rgba(0,0,0,0.6)' }}>
+                            <View className="absolute bottom-0 start-0 end-0 mx-0 mb-5">
                                 <View style={{ marginBottom: 8, position: 'relative' }}>
-                                    <View style={{ position: 'absolute', top: 18, left: 0, right: 0, height: 4, backgroundColor: '#333', borderRadius: 2, overflow: 'hidden' }}>
+
+                                    <View
+                                        className="absolute h-1 color rounded-sm overflow-hidden mx-5"
+                                        style={{ backgroundColor: '#333', borderRadius: 2 }}>
                                         <View style={{ width: `${status.progress}%`, height: '100%', backgroundColor: '#555' }} />
                                     </View>
 
                                     <Slider
-                                        style={{ width: '100%', height: 40, opacity: status.progress < 95 ? 0.5 : 1 }}
+                                        className="w-full h-10"
+                                        style={{ opacity: status.progress < 95 ? 0.5 : 1 }}
                                         minimumValue={0}
                                         maximumValue={duration}
                                         value={seeking ? undefined : currentTime}
