@@ -5,7 +5,7 @@ import Animated, {FadeIn, FadeInDown, useAnimatedStyle, useSharedValue, withSpri
 
 interface MovieCardProps {
     title: string;
-    rating: number;
+    rating?: number;
     posterUrl?: string;
     onPress: () => void;
     style?: 'horizontal' | 'grid';
@@ -71,12 +71,14 @@ export default function MovieCard(props: MovieCardProps) {
                             </Text>
                         </View>
                     )}
-                    <View className="absolute bottom-3 left-3 flex-row items-center gap-1">
-                        <Text className="text-text dark:text-text-dark text-lg font-bold shadow-lg">
-                            {props.rating.toFixed(1)}
-                        </Text>
-                        <Text className="text-base">⭐</Text>
-                    </View>
+                    {props.rating != null && (
+                        <View className="absolute bottom-3 left-3 flex-row items-center gap-1">
+                            <Text className="text-text dark:text-text-dark text-lg font-bold shadow-lg">
+                                {props.rating.toFixed(1)}
+                            </Text>
+                            <Text className="text-base">⭐</Text>
+                        </View>
+                    )}
                 </View>
                 <Text className="text-text dark:text-text-dark text-base font-semibold mt-3 leading-5" numberOfLines={2}>
                     {props.title}
