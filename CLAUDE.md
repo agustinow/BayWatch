@@ -1,187 +1,122 @@
-# Stremix Development Guide
+# BayWatch Development Guide
 
 ## Project Overview
-Stremix is a React Native streaming app that allows users to watch content through their own torrent sources, inspired by Stremio and Torrentio.
+BayWatch is a React Native streaming app that allows users to watch movies and TV shows through torrents. Inspired by Stremio and powered by Torrentio API.
 
-## Architecture Decision: Porting Torrentio to React Native
+## Architecture
 
-### Source Repository
-- **Original:** [torrentio-scraper](https://github.com/TheBeastLT/torrentio-scraper)
-- **License:** Apache 2.0
-- **Approach:** Port core functionality to React Native/TypeScript
-
-### What to Port
-
-#### ✅ **Can Be Ported (Client-Side Logic)**
-
-1. **Magnet URI Generation** (`addon/lib/magnetHelper.js`)
-   - Create magnet links from infohash + trackers
-   - Tracker management (anime, Russian, general)
-   - Can work entirely client-side
-
-2. **Stream Formatting** (`addon/lib/streamInfo.js`)
-   - Parse torrent titles with `parse-torrent-title`
-   - Format stream metadata (quality, size, languages)
-   - Binge group logic
-   - Subtitle mapping
-
-3. **Filtering Logic** (`addon/lib/filter.js`)
-   - Quality filters (4K, 1080p, CAM/SCR blocking)
-   - Size filters
-   - Provider filtering
-   - Language filtering
-
-4. **Sorting Logic** (`addon/lib/sort.js`)
-   - Sort by seeders, quality, size
-   - Custom sorting preferences
-
-5. **Configuration** (`addon/lib/configuration.js`)
-   - Parse user preferences
-   - Pre-configured profiles (Lite, Brazuca)
-
-6. **Utility Functions**
-   - Title parsing (`addon/lib/titleHelper.js`)
-   - Language mapping (`addon/lib/languages.js`)
-   - Extension detection (`addon/lib/extension.js`)
-
-#### ❌ **Cannot Port Directly (Need Alternatives)**
-
-1. **Database Layer** (`addon/lib/repository.js`)
-   - Original: PostgreSQL + Sequelize
-   - **Solution:**
-     - Use Torrentio's public API for data
-     - OR use local storage (SQLite/AsyncStorage) for caching
-     - OR implement own scraping with different storage
-
-2. **Server Components**
-   - Express routes (`addon/serverless.js`)
-   - Rate limiting
-   - **Solution:** Not needed - Stremix is client-only
-
-3. **Debrid Service Integration** (`addon/moch/`)
-   - RealDebrid, Premiumize, etc.
-   - **Solution:** CAN be ported - these use REST APIs (axios works in RN)
-
-### Implementation Plan
-
-#### Phase 1: Core Utilities
-```typescript
-// services/torrentio/
-├── magnetHelper.ts      // Port from magnetHelper.js
-├── streamFormatter.ts   // Port from streamInfo.js
-├── filters.ts          // Port from filter.js
-├── sorting.ts          // Port from sort.js
-├── titleParser.ts      // Port from titleHelper.js
-└── types.ts           // TypeScript definitions
-```
-
-#### Phase 2: Data Layer
-```typescript
-// services/torrentio/
-├── api.ts             // Fetch from public Torrentio API
-├── cache.ts           // Local caching with AsyncStorage
-└── config.ts          // User configuration management
-```
-
-#### Phase 3: Debrid Integration (Optional)
-```typescript
-// services/debrid/
-├── realdebrid.ts
-├── premiumize.ts
-├── alldebrid.ts
-└── types.ts
-```
-
-### Dependencies Needed
-
-```json
-{
-  "dependencies": {
-    "parse-torrent-title": "^2.x", // Parse torrent titles
-    "axios": "^1.x",                // HTTP requests
-    "@react-native-async-storage/async-storage": "^1.x" // Local storage
-  }
-}
-```
-
-### Magnet URI Generation (Example)
-
-```typescript
-// From torrentio stream object to magnet URI
-interface TorrentioStream {
-  infoHash: string;
-  title: string;
-  sources?: string[];
-}
-
-function generateMagnet(stream: TorrentioStream): string {
-  const infoHash = stream.infoHash;
-  const name = encodeURIComponent(stream.title);
-
-  // Extract trackers from sources
-  const trackers = stream.sources
-    ?.filter(s => s.startsWith('tracker:'))
-    .map(s => s.replace('tracker:', ''))
-    .map(t => `&tr=${encodeURIComponent(t)}`)
-    .join('') || '';
-
-  return `magnet:?xt=urn:btih:${infoHash}&dn=${name}${trackers}`;
-}
-```
-
-### Legal Considerations
-
-**Important:** Stremix follows the same legal framework as Torrentio:
-- ✅ Tool is neutral technology
-- ✅ No content hosting
-- ✅ User provides sources
-- ✅ Metadata aggregation only
-- ⚠️ User responsible for legal compliance
-
-**Disclaimer in app:**
-> "Stremix does not host, provide, or distribute any content. Users are solely responsible for the sources they configure and content they access."
+### Tech Stack
+- **Framework**: React Native 0.76+ with Expo SDK 52
+- **Language**: TypeScript 5.0+
+- **Styling**: NativeWind v4 (Tailwind for React Native)
+- **Navigation**: Expo Router (file-based)
+- **Video**: react-native-video
+- **Torrent Streaming**: [react-native-torrent-streamer](https://github.com/agustinow/react-native-torrent-streamer) (custom fork using libtorrent)
 
 ### Data Flow
 
 ```
-User searches "Avengers"
+User selects movie
     ↓
-Query Torrentio API: /stream/movie/tt0848228.json
+Fetch IMDB ID from TMDB API
     ↓
-Receive stream metadata (infohash, title, seeders, etc.)
+Query Torrentio API: /stream/movie/{imdb_id}.json
     ↓
-Client-side: Filter by quality/language/size
+Parse emoji-encoded metadata (👤💾⚙️🇬🇧)
     ↓
-Client-side: Sort by seeders/quality
+Filter & order streams by quality/seeders/size
     ↓
-Generate magnet URI from infohash + trackers
+Generate magnet URI with 20+ trackers
     ↓
-Option 1: Send to debrid service → Get HTTP stream URL
-Option 2: Send magnet to device's torrent player
+Pass to react-native-torrent-streamer
     ↓
-Stream content
+Torrent streamer creates local HTTP server
+    ↓
+Returns local URL: http://127.0.0.1:PORT/stream
+    ↓
+Play in react-native-video component
 ```
 
-### Next Steps
+### Project Structure
 
-1. **Create service layer structure**
-   ```bash
-   mkdir -p services/torrentio services/debrid
-   ```
+```
+stremix/
+├── api/                    # External API clients
+│   ├── tmdb/              # TMDB API (movie metadata)
+│   │   ├── client.ts      # Axios-based API calls
+│   │   └── types/         # TMDB response types
+│   └── torrentio/         # Torrentio API (torrent streams)
+│       ├── client.ts      # Stream fetching + magnet generation
+│       └── types/         # Stream types
+├── domain/                # Business logic & domain models
+│   ├── types/             # Domain entities (Movie, Stream)
+│   └── repositories/      # Data transformation layer
+│       ├── movieRepository.ts
+│       └── streamRepository.ts
+├── components/            # Reusable UI components
+│   ├── MovieCard.tsx      # Animated movie card
+│   ├── StreamCard.tsx     # Torrent stream display
+│   └── VideoPlayer.tsx    # Video playback component
+├── app/                   # Expo Router file-based routing
+│   ├── (drawer)/          # Main navigation
+│   ├── movie/[id].tsx     # Movie detail screen
+│   ├── search.tsx         # Search screen
+│   └── player.tsx         # Video player screen
+└── contexts/              # React contexts
+    └── ThemeContext.tsx   # Theme management
+```
 
-2. **Port magnetHelper first** (simplest, self-contained)
+## Key Implementation Details
 
-3. **Test with mock data** from Torrentio API responses
+### Stream Metadata Parsing
+Torrentio API returns streams with emoji-encoded metadata in titles:
+- 👤 = Seeders count
+- 💾 = File size
+- ⚙️ = Source (1337x, RARBG, YTS, etc.)
+- 🇬🇧🇪🇸🇫🇷 = Language flags
 
-4. **Add filtering/sorting UI** in app
+Parser in `domain/repositories/streamRepository.ts` extracts this metadata.
 
-5. **Integrate debrid services** (optional premium feature)
+### Magnet URI Generation
+Located in `api/torrentio/client.ts`:
+```typescript
+generateMagnetUri(infoHash: string, title: string): string {
+    const trackers = [
+        'udp://tracker.opentrackr.org:1337/announce',
+        'udp://open.demonii.com:1337/announce',
+        // ... 20+ trackers
+    ];
+    return `magnet:?xt=urn:btih:${infoHash}&dn=${encodeURIComponent(title)}&${trackerParams}`;
+}
+```
 
-6. **Add local scraping** (advanced - requires own indexing)
+### Torrent Streaming
+Using custom fork of react-native-torrent-streamer:
+- Built on libtorrent
+- Sequential downloading for instant playback
+- Creates local HTTP server on device
+- Returns streamable URL to react-native-video
 
-## Development Notes
+## Legal Framework
 
-- All ported code should be TypeScript
+BayWatch does NOT:
+- ❌ Host any content
+- ❌ Provide content sources
+- ❌ Distribute copyrighted material
+- ❌ Index torrents
+
+Users are solely responsible for:
+- ✅ Torrent sources they access
+- ✅ Content they download/stream
+- ✅ Compliance with local laws
+- ✅ Copyright/IP rights respect
+
+**Disclaimer**: This tool is designed for legally obtained content, public domain works, and Creative Commons media.
+
+## Development Guidelines
+
+- All code must be TypeScript
 - Use React Native compatible packages only
-- Document any deviations from original implementation
-- Keep legal disclaimers prominent
+- Follow Clean Architecture principles
+- Keep separation between API, Domain, and UI layers
+- Maintain legal disclaimers prominently

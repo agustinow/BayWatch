@@ -228,6 +228,8 @@ Play in Video component
 
 ## 🧪 Development
 
+> **Note**: This app was built manually with assistance from Claude, GPT and Gemini as development tools. See [CLAUDE.md](CLAUDE.md) for architecture decisions and useful AI context 💪.
+
 ### Project Structure
 
 ```bash
