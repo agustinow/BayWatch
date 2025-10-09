@@ -93,3 +93,6 @@ cache/
 downloads/
 
 .local
+/.idea/
+/.vscode/
+/.claude/
